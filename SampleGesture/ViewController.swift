@@ -47,7 +47,8 @@ class DragableImageView: UIImageView {
         case .ended:
             lastPointPanned.x = frame.origin.x
             lastPointPanned.y = frame.origin.y
-            repositionAfterPan()
+            //repositionAfterPan()
+            newPanReposition()
         default: break
         }
     }
@@ -106,6 +107,15 @@ class DragableImageView: UIImageView {
             print("Pinch 3")
         }
     }
+    
+    func newPanReposition() {
+        if frame.width == bounds.width && size.width == 0 && size.height == 0 {
+            print("0")
+            drawNewFrameForReposition(x: 0, y: 0, width: frame.width, height: frame.height)
+            return
+        }
+    }
+    
     
     private func repositionAfterPan() {
         if frame.width == bounds.width && size.width == 0 && size.height == 0 {
