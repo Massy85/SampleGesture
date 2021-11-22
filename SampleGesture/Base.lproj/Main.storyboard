@@ -16,11 +16,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gMe-OM-6TA">
-                                <rect key="frame" x="40" y="384" width="334" height="128"/>
+                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gMe-OM-6TA">
+                                <rect key="frame" x="40" y="348" width="334" height="200"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="0swift" translatesAutoresizingMaskIntoConstraints="NO" id="w9W-4s-cq0" customClass="DragableImageView" customModule="SampleGesture" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="334" height="128"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="334" height="200"/>
                                         <color key="backgroundColor" systemColor="labelColor"/>
                                         <color key="tintColor" systemColor="labelColor"/>
                                     </imageView>
@@ -30,7 +30,7 @@
                                     <constraint firstAttribute="trailing" secondItem="w9W-4s-cq0" secondAttribute="trailing" id="1ry-za-ve7"/>
                                     <constraint firstAttribute="bottom" secondItem="w9W-4s-cq0" secondAttribute="bottom" id="Afd-7f-RA6"/>
                                     <constraint firstItem="w9W-4s-cq0" firstAttribute="leading" secondItem="gMe-OM-6TA" secondAttribute="leading" id="B8y-T1-XAo"/>
-                                    <constraint firstAttribute="height" constant="128" id="oXb-lc-BBM"/>
+                                    <constraint firstAttribute="height" constant="200" id="oXb-lc-BBM"/>
                                     <constraint firstItem="w9W-4s-cq0" firstAttribute="top" secondItem="gMe-OM-6TA" secondAttribute="top" id="poY-kh-pqi"/>
                                 </constraints>
                             </view>
