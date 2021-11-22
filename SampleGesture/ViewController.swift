@@ -20,24 +20,25 @@ class ViewController: UIViewController {
 }
 
 class DragableImageView: UIImageView {
+
+    /// Used for comparing frame after transformation with the original frame
+    var originalFrame: CGRect {
+        superview?.frame ?? CGRect(x: 0, y: 0, width: 0, height: 0)
+    }
+    /// Used for track frame changed on began state for UIPinchGestureRecognizer
+    var framePinchBegan = CGRect(x: 0, y: 0, width: 0, height: 0)
+    /// Used for track frame changed on ended state for UIPinchGestureRecognizer
+    var framePinchEnded = CGRect(x: 0, y: 0, width: 0, height: 0)
+    /// Used for track frame changed on enede state for UIPanGestureRecognizer
+    var framePanEnded = CGRect(x: 0, y: 0, width: 0, height: 0)
     
-    private var pinchGesture: UIPinchGestureRecognizer!
-    private var panGesture: UIPanGestureRecognizer!
-    var lastPointPinched: CGPoint!
-    var lastPointPanned: CGPoint!
-    var originalSize: CGSize!
     override func awakeFromNib() {
         super.awakeFromNib()
         isUserInteractionEnabled = true
-        originalSize = CGSize(width: bounds.width, height: bounds.height)
-        pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(managePinch(_:)))
-        addGestureRecognizer(pinchGesture)
-        panGesture = UIPanGestureRecognizer(target: self, action: #selector(managePan(_:)))
-        addGestureRecognizer(panGesture)
-        lastPointPinched = frame.origin
-        lastPointPanned = frame.origin
+        addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(managePinch(_:))))
+        addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(managePan(_:))))
     }
-    
+
     @objc func managePan(_ sender: UIPanGestureRecognizer) {
         switch sender.state {
         case .changed:
@@ -45,35 +46,129 @@ class DragableImageView: UIImageView {
             center = CGPoint(x: center.x + translation.x, y: center.y + translation.y)
             sender.setTranslation(.zero, in: self)
         case .ended:
-            lastPointPanned.x = frame.origin.x
-            lastPointPanned.y = frame.origin.y
+            framePanEnded = frame
             repositionAfterPan()
         default: break
         }
     }
     
     
-    var pinchedView = UIView()
-    var oldPoint: CGPoint = CGPoint(x: 0, y: 0)
-    var oldSize: CGSize = CGSize(width: 0, height: 0)
-    var size: CGSize = CGSize(width: 0, height: 0)
+    private func repositionAfterPan() {
+        
+        // Caso in cui usiamo il pan gesture senza aver modificato il frame
+        if frame.width == originalFrame.width {
+            drawNewFrameForReposition(x: 0, y: 0, width: frame.width, height: frame.height)
+            return
+        }
+        
+        // Premessa: il frame viene ignorato se vengono compiute trasformazioni su di esso e quindi dopo risulta impossibile andare a stabilire correttamente i punti degli assi
+        // Quindi nel caso in cui il frame risultasse ancora non conforme con `identity` lo riportiamo allo stato di `identity` e andiamo a settare il nuovo frame con le misure che abbiamo dopo il panGesture
+        if transform.isIdentity == false {
+            transform = .identity
+            frame = framePanEnded
+        }
+        
+        var x = frame.minX
+        var y = frame.minY
+        
+        // Calcolo della cordinata X nel caso in cui è minore o maggiore di zero
+        // Nel caso in cui è minore andiamo a calcolarci la differenza di larghezza tra il frame attuale e quello originale e gli aggiungiamo il valore corrente della X cosi nel caso `rightSideSurplus` è maggiore sappiamo che c'è il frame risulta sbordare dalla parte destra e quindi impostiamo la X con il valore attuale mentre se fosse minore assegniamo alla X la differenza in negativo del frame dopo il pinched con il frame originale facendo combaciare il lato destro del nuovo frame con quello originale.
+        if x > 0 {
+            x = 0
+        } else if x < 0 {
+            let rightSideSurplus = frame.minX + (frame.width - originalFrame.width)
+            if rightSideSurplus > 0 {
+                x = frame.minX
+            } else {
+                x = -(framePinchEnded.width - originalFrame.width)
+            }
+        }
+        
+        // Stesso calcolo viene applicato per la Y ma la differenza `bottomSideSurplus` viene calcolata sull'altezza
+        if y > 0 {
+            y = 0
+        } else if y < 0 {
+            let bottomSideSurplus = frame.minY + (frame.height - originalFrame.height)
+            if bottomSideSurplus > 0 {
+                y = frame.minY
+            } else {
+                y = -(framePinchEnded.height - originalFrame.height)
+            }
+        }
+        
+        // Usiamo come width e height il valore che ci ritorna dallo stato ended del pich
+        drawNewFrameForReposition(x: x, y: y, width: framePinchEnded.width, height: framePinchEnded.height)
+    }
+    
+    
     
     @objc func managePinch(_ sender: UIPinchGestureRecognizer) {
         switch sender.state {
         case .began:
-            oldSize = CGSize(width: frame.width, height: frame.height)
-            oldPoint = CGPoint(x: frame.minX, y: frame.minY)
+            framePinchBegan = frame
         case .changed:
             transform = CGAffineTransform(scaleX: sender.scale, y: sender.scale)
 
         case .ended:
-            pinchedView = sender.view!
-            lastPointPinched.x = frame.origin.x
-            lastPointPinched.y = frame.origin.y
-            lastPointPanned = lastPointPinched
-            size = CGSize(width: frame.width, height: frame.height)
+            framePinchEnded = frame
             repositionAfterPinch()
         default: break
+        }
+    }
+    
+    private func repositionAfterPinch() {
+        // Caso in cui dopo il pinch il frame risulti più piccolo delle dimensioni originali è quindi lo ripristiniamo
+        if frame.width < originalFrame.width {
+            transform = .identity
+            drawNewFrameForReposition(x: 0, y: 0, width: originalFrame.width, height: originalFrame.height)
+            return
+        }
+        
+        transform = .identity
+        frame = framePinchEnded
+        var x = frame.minX
+        var y = frame.minY
+        
+        // Se origin è nel quadrante basso destro
+        if x > 0  && y > 0 {
+            framePinchEnded = framePinchBegan
+            drawNewFrameForReposition(x: 0, y: 0, width: framePinchBegan.width, height: framePinchBegan.height)
+            return
+        }
+        
+        // Se origin è nel quadrante alto destro
+        if x > 0  && y < 0 {
+            x = framePinchBegan.minX
+            y = framePinchBegan.minY
+            framePinchEnded = framePinchBegan
+            drawNewFrameForReposition(x: x, y: y, width: framePinchBegan.width, height: framePinchBegan.height)
+            return
+        }
+        
+        // Se origin è nel quadrante alto sinistro
+        if x < 0  && y < 0 {
+            let bottomSideSurplus = frame.minY + (frame.height - originalFrame.height)
+            let rightSideSurplus = frame.minX + (frame.width - originalFrame.width)
+            
+            if bottomSideSurplus < 0 && rightSideSurplus < 0 {
+                x = framePinchBegan.minX
+                y = framePinchBegan.minY
+                framePinchEnded = framePinchBegan
+                drawNewFrameForReposition(x: x, y: y, width: framePinchBegan.width, height: framePinchBegan.height)
+                return
+            } else {
+                drawNewFrameForReposition(x: frame.minX, y: frame.minY, width: frame.width, height: frame.height)
+                return
+            }
+        }
+        
+        // Se origin è nel quadrante basso sinistro
+        if x < 0  && y > 0{
+            x = framePinchBegan.minX
+            y = framePinchBegan.minY
+            framePinchEnded = framePinchBegan
+            drawNewFrameForReposition(x: x, y: y, width: framePinchBegan.width, height: framePinchBegan.height)
+            return
         }
     }
     
@@ -81,121 +176,6 @@ class DragableImageView: UIImageView {
         UIView.animate(withDuration: 0.2) {
             self.frame = CGRect(x: x, y: y, width: width, height: height)
         }
-    }
-    
-    private func repositionAfterPinch() {
-        if frame.width < bounds.width && size.width < originalSize.width {
-            transform = .identity
-            drawNewFrameForReposition(x: 0, y: 0, width: originalSize.width, height: originalSize.height)
-            self.size = self.originalSize
-            return
-        }
-        
-//        if transform.isIdentity == false {
-//            transform = .identity
-//            frame = CGRect(x: lastPointPinched.x, y: lastPointPinched.y, width: size.width, height: size.height)
-//            return
-//        }
-        transform = .identity
-        var x: CGFloat = lastPointPinched.x
-        var y: CGFloat = lastPointPinched.y
-        
-        
-        
-        if lastPointPinched.x > 0 && lastPointPinched.y > 0 {
-            if size.width < originalSize.width {
-                drawNewFrameForReposition(x: 0, y: 0, width: originalSize.width, height: originalSize.height)
-                self.size = self.originalSize
-                return
-            } else {
-                drawNewFrameForReposition(x: 0, y: 0, width: oldSize.width, height: oldSize.height)
-                self.size = self.oldSize
-                return
-            }
-        }
-        
-        if lastPointPinched.x > 0 && lastPointPinched.y < 0 {
-            if size.width < originalSize.width {
-                drawNewFrameForReposition(x: 0, y: 0, width: originalSize.width, height: originalSize.height)
-                self.size = self.originalSize
-                return
-            } else {
-                drawNewFrameForReposition(x: oldPoint.x, y: oldPoint.y, width: oldSize.width, height: oldSize.height)
-                self.size = self.oldSize
-                return
-            }
-        }
-        
-        let heightDiff = -(frame.height - size.height)
-        let widthDiff = -(frame.width - oldSize.width)
-        #warning("Gestire questo caso")
-        if lastPointPinched.x < 0 && lastPointPinched.y < 0 && frame.maxX < originalSize.width {
-            if size.width < originalSize.width {
-                drawNewFrameForReposition(x: 0, y: 0, width: originalSize.width, height: originalSize.height)
-                self.size = self.originalSize
-                return
-            } else {
-                drawNewFrameForReposition(x: oldPoint.x, y: oldPoint.y, width: oldSize.width, height: oldSize.height)
-                self.size = self.oldSize
-                return
-            }
-        }
-        
-        if lastPointPinched.x < 0 && lastPointPinched.y > 0 {
-            if size.width < originalSize.width {
-                drawNewFrameForReposition(x: 0, y: 0, width: originalSize.width, height: originalSize.height)
-                self.size = self.originalSize
-                return
-            } else {
-                drawNewFrameForReposition(x: oldPoint.x, y: oldPoint.y, width: oldSize.width, height: oldSize.height)
-                self.size = self.oldSize
-                return
-            }
-        }
-        
-        frame = CGRect(x: lastPointPinched.x, y: lastPointPinched.y, width: size.width, height: size.height)
-    }
-    
-    func repositionAfterPan() {
-        if frame.width == bounds.width && size.width == 0 && size.height == 0 {
-            print("0")
-            drawNewFrameForReposition(x: 0, y: 0, width: frame.width, height: frame.height)
-            return
-        }
-        
-        if transform.isIdentity == false {
-            transform = .identity
-            frame = CGRect(x: lastPointPanned.x, y: lastPointPanned.y, width: size.width, height: size.height)
-            return
-        }
-        
-        var x: CGFloat = frame.minX
-        var y: CGFloat = frame.minY
-        
-        if frame.minX > 0 {
-            if frame.minX > 0 && frame.maxX > originalSize.width {
-                x = 0
-            } else {
-                let widthDiff = -(frame.width - originalSize.width)
-                x = widthDiff
-            }
-        } else if frame.minX < 0 {
-            let widthDiff = -(frame.width - originalSize.width)
-            if frame.minX < widthDiff {
-                x = widthDiff
-            }
-        }
-        
-        if frame.minY > 0 {
-            y = 0
-        } else if frame.minY < 0 {
-            let heightDiff = -(frame.height - originalSize.height)
-            if frame.minY < heightDiff {
-                y = heightDiff
-            }
-        }
-        
-        drawNewFrameForReposition(x: x, y: y, width: size.width, height: size.height)
     }
 }
 

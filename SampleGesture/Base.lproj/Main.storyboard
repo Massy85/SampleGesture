@@ -17,10 +17,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gMe-OM-6TA">
-                                <rect key="frame" x="87" y="384" width="240" height="128"/>
+                                <rect key="frame" x="40" y="384" width="334" height="128"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="0swift" translatesAutoresizingMaskIntoConstraints="NO" id="w9W-4s-cq0" customClass="DragableImageView" customModule="SampleGesture" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="334" height="128"/>
                                         <color key="backgroundColor" systemColor="labelColor"/>
                                         <color key="tintColor" systemColor="labelColor"/>
                                     </imageView>
@@ -30,7 +30,6 @@
                                     <constraint firstAttribute="trailing" secondItem="w9W-4s-cq0" secondAttribute="trailing" id="1ry-za-ve7"/>
                                     <constraint firstAttribute="bottom" secondItem="w9W-4s-cq0" secondAttribute="bottom" id="Afd-7f-RA6"/>
                                     <constraint firstItem="w9W-4s-cq0" firstAttribute="leading" secondItem="gMe-OM-6TA" secondAttribute="leading" id="B8y-T1-XAo"/>
-                                    <constraint firstAttribute="width" constant="240" id="oA6-it-H2j"/>
                                     <constraint firstAttribute="height" constant="128" id="oXb-lc-BBM"/>
                                     <constraint firstItem="w9W-4s-cq0" firstAttribute="top" secondItem="gMe-OM-6TA" secondAttribute="top" id="poY-kh-pqi"/>
                                 </constraints>
@@ -40,6 +39,8 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="gMe-OM-6TA" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="7QF-t7-nnv"/>
+                            <constraint firstItem="gMe-OM-6TA" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="40" id="PNS-Yt-hwW"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="gMe-OM-6TA" secondAttribute="trailing" constant="40" id="YXF-Ek-KRF"/>
                             <constraint firstItem="gMe-OM-6TA" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="xP4-qI-UfY"/>
                         </constraints>
                     </view>
