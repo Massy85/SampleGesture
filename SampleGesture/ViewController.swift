@@ -32,13 +32,39 @@ class DragableImageView: UIImageView {
     /// Used for track frame changed on enede state for UIPanGestureRecognizer
     var framePanEnded = CGRect(x: 0, y: 0, width: 0, height: 0)
     
+    var tapGestureRecognizer: UITapGestureRecognizer!
+    var doubleTapGestureRecognizer: UITapGestureRecognizer!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         isUserInteractionEnabled = true
         addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(managePinch(_:))))
         addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(managePan(_:))))
+        tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(managePan(_:)))
+        tapGestureRecognizer.numberOfTapsRequired = 1
+        addGestureRecognizer(tapGestureRecognizer)
+        doubleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(manageDoubleTap(_:)))
+        doubleTapGestureRecognizer.numberOfTapsRequired = 2
+        addGestureRecognizer(doubleTapGestureRecognizer)
     }
 
+    @objc func manageTap(_ sender: UITapGestureRecognizer) {
+        print(#function)
+    }
+    
+    @objc func manageDoubleTap(_ sender: UITapGestureRecognizer) {
+        print(#function)
+        switch sender.state {
+        case .ended:
+            if frame.width > originalFrame.width {
+                transform = .identity
+                drawNewFrameForReposition(x: 0, y: 0, width: originalFrame.width, height: originalFrame.height)
+                return
+            }
+        default: break
+        }
+    }
+    
     @objc func managePan(_ sender: UIPanGestureRecognizer) {
         switch sender.state {
         case .changed:
