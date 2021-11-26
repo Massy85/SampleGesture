@@ -49,6 +49,7 @@
 		709B7AB727468BC500E410CB /* SampleGestureUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SampleGestureUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		709B7ABB27468BC500E410CB /* SampleGestureUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleGestureUITests.swift; sourceTree = "<group>"; };
 		709B7ABD27468BC500E410CB /* SampleGestureUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleGestureUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		70A08AF82750D6B9002A36BD /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +100,7 @@
 		709B7A9927468BC300E410CB /* SampleGesture */ = {
 			isa = PBXGroup;
 			children = (
+				70A08AF82750D6B9002A36BD /* README.md */,
 				709B7A9A27468BC300E410CB /* AppDelegate.swift */,
 				709B7A9C27468BC300E410CB /* SceneDelegate.swift */,
 				709B7A9E27468BC300E410CB /* ViewController.swift */,
